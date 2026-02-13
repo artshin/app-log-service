@@ -16,11 +16,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "AppLogService"
+            name: "AppLogService",
+            path: "swift/Sources/AppLogService"
         ),
         .testTarget(
             name: "AppLogServiceTests",
-            dependencies: ["AppLogService"]
+            dependencies: ["AppLogService"],
+            path: "swift/Tests/AppLogServiceTests"
         ),
     ]
 )
