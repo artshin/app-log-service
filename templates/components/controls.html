@@ -1,0 +1,250 @@
+<div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <!-- Top bar: Search -->
+    <div class="px-4 py-3 border-b border-gray-100">
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="search" placeholder="Search logs... (press / to focus)"
+                   class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="px-4 py-2 flex items-center justify-between gap-4 flex-wrap">
+        <!-- Left side: Filters -->
+        <div class="flex items-center gap-3 flex-wrap">
+            <!-- Level multi-select dropdown -->
+            <div class="relative" id="level-dropdown-container">
+                <button type="button" id="level-dropdown-btn"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm hover:bg-gray-100 transition">
+                    <span class="text-gray-600">Level</span>
+                    <span id="level-count" class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-xs font-medium">7</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="level-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px] z-20">
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="trace" checked>
+                        <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                        <span class="text-sm">Trace</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="debug" checked>
+                        <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                        <span class="text-sm">Debug</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="info" checked>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="text-sm">Info</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="notice" checked>
+                        <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                        <span class="text-sm">Notice</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="warning" checked>
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span class="text-sm">Warning</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="error" checked>
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span class="text-sm">Error</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="level-filter rounded text-purple-600 focus:ring-purple-500" value="critical" checked>
+                        <span class="w-2 h-2 rounded-full bg-fuchsia-500"></span>
+                        <span class="text-sm">Critical</span>
+                    </label>
+                    <div class="border-t border-gray-100 mt-1 pt-1">
+                        <button type="button" id="select-all-levels" class="w-full text-left px-3 py-1.5 text-xs text-purple-600 hover:bg-gray-50">Select All</button>
+                        <button type="button" id="clear-all-levels" class="w-full text-left px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50">Clear All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Source dropdown -->
+            <div class="relative" id="source-dropdown-container">
+                <button type="button" id="source-dropdown-btn"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm hover:bg-gray-100 transition">
+                    <span class="text-gray-600" id="source-label">All Sources</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="source-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px] max-h-[300px] overflow-y-auto z-20">
+                    <button type="button" class="source-option w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50" data-value="">All Sources</button>
+                    {% for source in sources %}
+                    <button type="button" class="source-option w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50" data-value="{{ source }}">{{ source }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Hidden select for form compatibility -->
+            <select id="source-select" class="hidden">
+                <option value="">All Sources</option>
+                {% for source in sources %}
+                <option value="{{ source }}">{{ source }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Tags multi-select dropdown -->
+            <div class="relative" id="tags-dropdown-container">
+                <button type="button" id="tags-dropdown-btn"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm hover:bg-gray-100 transition">
+                    <span class="text-gray-600">Tags</span>
+                    <span id="tags-count" class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-xs font-medium">{{ all_tags.len() }}</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="tags-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px] max-h-[300px] overflow-y-auto z-20">
+                    {% if all_tags.is_empty() %}
+                    <div class="px-3 py-2 text-xs text-gray-400">No tags yet</div>
+                    {% else %}
+                    {% for tag in all_tags %}
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="tag-filter rounded text-purple-600 focus:ring-purple-500" value="{{ tag }}" checked>
+                        <span class="tag-pill inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" data-tag="{{ tag }}">
+                            {{ tag }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                    <div class="border-t border-gray-100 mt-1 pt-1">
+                        <button type="button" id="select-all-tags" class="w-full text-left px-3 py-1.5 text-xs text-purple-600 hover:bg-gray-50">Select All</button>
+                        <button type="button" id="clear-all-tags" class="w-full text-left px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50">Clear All</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Columns multi-select dropdown -->
+            <div class="relative" id="columns-dropdown-container">
+                <button type="button" id="columns-dropdown-btn"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm hover:bg-gray-100 transition">
+                    <span class="text-gray-600">Columns</span>
+                    <span id="columns-count" class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-xs font-medium">6</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="columns-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px] z-20">
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="column-toggle rounded text-purple-600 focus:ring-purple-500" value="level" checked>
+                        <span class="text-sm">Level</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="column-toggle rounded text-purple-600 focus:ring-purple-500" value="time" checked>
+                        <span class="text-sm">Time</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="column-toggle rounded text-purple-600 focus:ring-purple-500" value="source" checked>
+                        <span class="text-sm">Source</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="column-toggle rounded text-purple-600 focus:ring-purple-500" value="tags" checked>
+                        <span class="text-sm">Tags</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="column-toggle rounded text-purple-600 focus:ring-purple-500" value="caller" checked>
+                        <span class="text-sm">Caller</span>
+                    </label>
+                    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer text-gray-400">
+                        <input type="checkbox" class="column-toggle rounded text-purple-600 focus:ring-purple-500" value="message" checked disabled>
+                        <span class="text-sm">Message</span>
+                    </label>
+                    <div class="border-t border-gray-100 mt-1 pt-1">
+                        <button type="button" id="show-all-columns" class="w-full text-left px-3 py-1.5 text-xs text-purple-600 hover:bg-gray-50">Show All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort order dropdown -->
+            <div class="relative" id="sort-dropdown-container">
+                <button type="button" id="sort-dropdown-btn"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm hover:bg-gray-100 transition">
+                    <span class="text-gray-600" id="sort-label">Newest First</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="sort-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[140px] z-20">
+                    <button type="button" class="sort-option w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50" data-value="desc">Newest First</button>
+                    <button type="button" class="sort-option w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50" data-value="asc">Oldest First</button>
+                </div>
+            </div>
+            <!-- Hidden select for compatibility -->
+            <select id="sort-order" class="hidden">
+                <option value="desc" selected>Newest First</option>
+                <option value="asc">Oldest First</option>
+            </select>
+        </div>
+
+        <!-- Right side: Actions -->
+        <div class="flex items-center gap-2">
+            <!-- Live toggle -->
+            <label class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100 transition">
+                <input type="checkbox" id="live-stream" class="rounded text-purple-600 focus:ring-purple-500" checked>
+                <span class="text-sm text-gray-600">Live</span>
+                <span id="stream-status" class="w-2 h-2 rounded-full bg-yellow-400"></span>
+            </label>
+
+            <!-- Auto-scroll toggle -->
+            <label class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100 transition">
+                <input type="checkbox" id="autoscroll" class="rounded text-purple-600 focus:ring-purple-500" checked>
+                <span class="text-sm text-gray-600">Auto-scroll</span>
+            </label>
+
+            <!-- Divider -->
+            <div class="w-px h-6 bg-gray-200"></div>
+
+            <!-- Export dropdown -->
+            <div class="relative" id="export-dropdown-container">
+                <button type="button" id="export-dropdown-btn" title="Export logs"
+                        class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                </button>
+                <div id="export-dropdown" class="hidden absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[140px] z-20">
+                    <button type="button" id="export-json" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        Raw JSON
+                    </button>
+                    <button type="button" id="export-txt" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Raw TXT
+                    </button>
+                </div>
+            </div>
+
+            <!-- Refresh button -->
+            <button type="button" id="refresh" title="Refresh"
+                    class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+            </button>
+
+            <!-- Clear all button -->
+            <button type="button" id="clear-logs" title="Clear all logs"
+                    class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Copy feedback toast -->
+<div id="copy-feedback" class="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm opacity-0 transition-opacity pointer-events-none">
+    Copied to clipboard
+</div>

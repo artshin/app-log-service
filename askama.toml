@@ -1,0 +1,8 @@
+[general]
+# Directory containing template files
+dirs = ["templates"]
+
+# File extension for templates
+[escaping]
+# Auto-escape HTML by default to prevent XSS
+html = "html"

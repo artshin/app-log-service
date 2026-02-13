@@ -1,0 +1,61 @@
+[package]
+name = "log-server"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Log Server - Development logging service for Calories Tracker"
+authors = ["Artur Shinkevich"]
+
+[[bin]]
+name = "log-server"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full", "signal"] }
+
+# HTTP framework
+axum = { version = "0.7", features = ["json"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+futures = "0.3"
+tokio-stream = { version = "0.1", features = ["sync"] }
+
+# Templates
+askama = { version = "0.12", features = ["with-axum", "serde-json"] }
+askama_axum = "0.4"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Date/time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Terminal colors
+colored = "2.1"
+
+# Logging/tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
+uuid = { version = "1.11", features = ["v4", "serde"] }
+parking_lot = "0.12"
+
+# JWT Authentication
+jsonwebtoken = "9.2"
+rsa = "0.9"
+
+# Compression
+flate2 = "1.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[profile.release]
+lto = true
+strip = true

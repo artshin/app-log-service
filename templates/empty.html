@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Log Dashboard{% endblock %}
+
+{% block content %}
+<div class="container max-w-7xl mx-auto px-5 py-5">
+    <!-- Header -->
+    <div class="header bg-white p-8 rounded-lg mb-5 shadow-sm">
+        <h1 class="text-3xl font-semibold mb-2 text-gray-800">Log Dashboard</h1>
+        <p class="subtitle text-gray-500 text-sm">Real-time log viewer for development</p>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state text-center py-16 bg-white rounded-lg shadow-sm text-gray-500">
+        <h2 class="text-2xl mb-2.5 text-gray-800">No Logs Yet</h2>
+        <p class="mb-5 text-sm">Waiting for log entries from your application...</p>
+        <p><span id="stream-status" class="stream-status px-2.5 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Connecting...</span></p>
+        <button onclick="location.reload()" class="mt-5 px-4 py-2 bg-blue-500 text-white font-semibold rounded text-sm hover:bg-blue-600 transition">
+            Refresh
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer text-center py-5 text-gray-500 text-xs">
+        <p>View raw JSON: <a href="/logs" target="_blank" class="text-blue-500 no-underline hover:underline">/logs</a> | API docs: <a href="/info" target="_blank" class="text-blue-500 no-underline hover:underline">/info</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize SSE for empty state
+let eventSource = new EventSource('/stream');
+
+eventSource.addEventListener('log', function(event) {
+    // Reload page when first log arrives
+    location.reload();
+});
+
+eventSource.onopen = function() {
+    const statusElement = document.getElementById('stream-status');
+    statusElement.textContent = 'Connected - Waiting for logs...';
+    statusElement.className = 'stream-status px-2.5 py-1 rounded text-xs font-medium bg-green-100 text-green-800';
+};
+
+eventSource.onerror = function(error) {
+    const statusElement = document.getElementById('stream-status');
+    statusElement.textContent = 'Disconnected';
+    statusElement.className = 'stream-status px-2.5 py-1 rounded text-xs font-medium bg-red-100 text-red-800';
+};
+</script>
+{% endblock %}

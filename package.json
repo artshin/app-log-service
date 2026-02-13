@@ -1,0 +1,13 @@
+{
+  "name": "log-server-ui",
+  "version": "1.0.0",
+  "description": "Tailwind CSS build for Log Server dashboard",
+  "private": true,
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify",
+    "watch:css": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

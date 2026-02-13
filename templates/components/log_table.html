@@ -1,0 +1,155 @@
+<div id="table-wrapper" class="flex-1 overflow-auto bg-white">
+    <table id="log-table" class="w-full table-fixed">
+        <thead class="bg-gray-50 sticky top-0 z-[5]">
+            <tr class="text-left text-xs text-gray-500 uppercase tracking-wider">
+                <th class="px-3 py-3 font-medium w-[70px]" data-col="level" data-column="level">Level</th>
+                <th class="px-3 py-3 font-medium w-[85px]" data-col="time" data-column="time">Time</th>
+                <th class="px-3 py-3 font-medium w-[100px]" data-col="source" data-column="source">Source</th>
+                <th class="px-3 py-3 font-medium w-[150px]" data-col="tags" data-column="tags">Tags</th>
+                <th class="px-3 py-3 font-medium w-[180px]" data-col="caller" data-column="caller">Caller</th>
+                <th class="px-3 py-3 font-medium" data-col="message" data-column="message">Message</th>
+            </tr>
+        </thead>
+        <tbody id="logs-tbody" class="divide-y divide-gray-100">
+            {% for entry in entries.iter().rev() %}
+            {% let level_lower = entry.level.to_lowercase() %}
+            {% let has_caller = !entry.file.is_empty() || entry.line > 0 %}
+            <tr class="log-row hover:bg-gray-50 transition-colors cursor-pointer group"
+                data-level="{{ level_lower }}"
+                data-source="{{ entry.source }}"
+                data-message="{{ entry.message }}"
+                data-id="{{ entry.id }}"
+                data-timestamp="{{ entry.timestamp.timestamp_millis() }}"
+                data-file="{{ entry.file }}"
+                data-line="{{ entry.line }}"
+                data-function="{{ entry.function }}"
+                data-tags="{{ entry.tags.join(",") }}"
+                data-json="{{ entry|json }}"
+                onclick="toggleDetails('{{ entry.id }}', event)">
+                <td class="px-3 py-2" data-column="level">
+                    <span class="inline-flex items-center gap-1 text-xs font-medium
+                        {% if level_lower == "trace" || level_lower == "debug" %}text-gray-600
+                        {% else if level_lower == "info" %}text-emerald-600
+                        {% else if level_lower == "notice" %}text-sky-600
+                        {% else if level_lower == "warning" %}text-amber-600
+                        {% else if level_lower == "error" %}text-red-600
+                        {% else if level_lower == "critical" %}text-fuchsia-600
+                        {% else %}text-gray-600{% endif %}">
+                        <span class="w-2 h-2 rounded-full flex-shrink-0
+                            {% if level_lower == "trace" || level_lower == "debug" %}bg-gray-400
+                            {% else if level_lower == "info" %}bg-emerald-500
+                            {% else if level_lower == "notice" %}bg-sky-500
+                            {% else if level_lower == "warning" %}bg-amber-500
+                            {% else if level_lower == "error" %}bg-red-500
+                            {% else if level_lower == "critical" %}bg-fuchsia-500
+                            {% else %}bg-gray-400{% endif %}"></span>
+                        {{ entry.level.to_uppercase() }}
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-xs text-gray-500 font-mono whitespace-nowrap" data-column="time">
+                    {{ entry.timestamp.format("%H:%M:%S") }}
+                </td>
+                <td class="px-3 py-2" data-column="source">
+                    <span class="text-xs text-gray-600 font-medium truncate block" title="{{ entry.source }}">
+                        {{ entry.source }}
+                    </span>
+                </td>
+                <td class="px-3 py-2 tags-cell" data-column="tags">
+                    {% if !entry.tags.is_empty() %}
+                    <div class="flex flex-wrap gap-1">
+                        {% for tag in entry.tags %}
+                        <span class="tag-pill inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" data-tag="{{ tag }}" title="{{ tag }}">
+                            {{ tag }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <span class="text-xs text-gray-400">-</span>
+                    {% endif %}
+                </td>
+                <td class="px-3 py-2" data-column="caller">
+                    {% if has_caller %}
+                    <span class="text-xs text-gray-500 font-mono truncate block caller-cell" title="{{ entry.file }}:{{ entry.line }}" data-file="{{ entry.file }}" data-line="{{ entry.line }}">
+                        {% if !entry.file.is_empty() && entry.line > 0 %}{{ entry.file }}:{{ entry.line }}{% else if !entry.file.is_empty() %}{{ entry.file }}{% else %}-{% endif %}
+                    </span>
+                    {% else %}
+                    <span class="text-xs text-gray-400">-</span>
+                    {% endif %}
+                </td>
+                <td class="px-3 py-2" data-column="message">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-800 font-mono truncate flex-1" title="{{ entry.message }}">{{ entry.message }}</span>
+                        <button class="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600 transition"
+                                onclick="copyLogEntry('{{ entry.id }}', event)" title="Copy JSON">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr class="detail-row hidden bg-gray-50" id="detail-{{ entry.id }}">
+                <td colspan="6" class="px-4 py-4">
+                    <div class="space-y-3">
+                        <div>
+                            <span class="text-gray-500 text-xs uppercase tracking-wide block mb-1">Full Message</span>
+                            <pre class="text-gray-800 font-mono text-sm bg-white px-3 py-2 rounded border border-gray-200 whitespace-pre-wrap break-words">{{ entry.message }}</pre>
+                        </div>
+                        <div class="grid grid-cols-[100px_1fr] gap-y-2 gap-x-4 text-sm">
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">ID</span>
+                            <code class="text-gray-800 font-mono text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ entry.id }}</code>
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">Timestamp</span>
+                            <code class="text-gray-800 font-mono text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ entry.timestamp.format("%Y-%m-%d %H:%M:%S%.3f") }} UTC</code>
+                            {% if !entry.file.is_empty() %}
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">File</span>
+                            <code class="text-gray-800 font-mono text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ entry.file }}</code>
+                            {% endif %}
+                            {% if !entry.function.is_empty() %}
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">Function</span>
+                            <code class="text-gray-800 font-mono text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ entry.function }}</code>
+                            {% endif %}
+                            {% if entry.line > 0 %}
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">Line</span>
+                            <code class="text-gray-800 font-mono text-xs bg-white px-2 py-1 rounded border border-gray-200">{{ entry.line }}</code>
+                            {% endif %}
+                            {% if !entry.tags.is_empty() %}
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">Tags</span>
+                            <div class="flex flex-wrap gap-1">
+                                {% for tag in entry.tags %}
+                                <span class="tag-pill inline-flex items-center px-2 py-1 rounded text-xs font-medium" data-tag="{{ tag }}">
+                                    {{ tag }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if !entry.metadata.is_empty() %}
+                            <span class="text-gray-500 text-xs uppercase tracking-wide">Metadata</span>
+                            <pre class="text-gray-800 font-mono text-xs bg-white px-2 py-1 rounded border border-gray-200 overflow-x-auto">{% for (key, value) in entry.metadata.iter() %}{{ key }}: {{ value }}
+{% endfor %}</pre>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if entries.is_empty() %}
+    <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="text-sm">No logs yet</p>
+        <p class="text-xs mt-1">Waiting for events...</p>
+    </div>
+    {% endif %}
+
+    <div id="no-results-message" class="hidden flex flex-col items-center justify-center py-16 text-gray-400">
+        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <p class="text-sm">No matching logs</p>
+        <p class="text-xs mt-1">Try adjusting your filters</p>
+    </div>
+</div>

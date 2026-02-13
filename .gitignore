@@ -1,0 +1,25 @@
+# Rust build artifacts
+/target/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
+
+# Test artifacts
+*.profraw
+*.profdata
+
+node_modules/
+static/css
