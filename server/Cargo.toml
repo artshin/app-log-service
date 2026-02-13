@@ -3,7 +3,7 @@ name = "log-server"
 version = "1.0.0"
 edition = "2021"
 rust-version = "1.75"
-description = "Log Server - Development logging service for Calories Tracker"
+description = "Log Server - Development logging and diagnostics service"
 authors = ["Artur Shinkevich"]
 
 [[bin]]

@@ -1,110 +1,76 @@
-# Log Server (Rust)
+# AppLogService
 
-A development logging service for the Calories Tracker application. Receives log entries from Swift clients (CLI and iOS), stores them in a circular buffer, and displays them in the terminal with ANSI color coding.
+A logging service for Apple platform apps. Contains a **Rust HTTP server** for receiving and displaying logs, and a **Swift Package** client SDK for sending them.
 
-## Features
+## Repository Structure
 
-- HTTP REST API for log submission and retrieval
-- Thread-safe circular buffer (1000 entries by default)
-- ANSI color-coded terminal output
-- Graceful shutdown on SIGINT/SIGTERM
-- Verbose mode for metadata display
-
-## Quick Start
-
-```bash
-# Build and run
-make run
-
-# Run with verbose mode (shows file/line info)
-make run-verbose
-
-# Run with hot reload (development)
-make dev
+```
+├── server/       # Rust log server
+└── swift/        # Swift client SDK (SPM package)
 ```
 
-## API Endpoints
+## Server
+
+The Rust log server receives, stores, and displays log entries with a web dashboard and terminal output.
+
+```bash
+cd server
+make run        # Build and run
+make dev        # Run with hot reload
+make test       # Run tests
+```
+
+### API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Welcome page with documentation |
+| GET | `/` | HTML dashboard |
 | POST | `/logs` | Submit a log entry |
 | GET | `/logs` | Retrieve all logs (JSON) |
 | DELETE | `/logs` | Clear all logs |
+| GET | `/stream` | SSE real-time log stream |
 
-## Log Entry Format
-
-```json
-{
-  "id": "unique-id",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "level": "info",
-  "message": "Log message here",
-  "source": "cli",
-  "metadata": {"key": "value"},
-  "file": "main.swift",
-  "function": "main()",
-  "line": 42
-}
-```
-
-## Log Levels
-
-| Level | Color |
-|-------|-------|
-| trace | gray |
-| debug | gray |
-| info | green |
-| notice | blue |
-| warning | yellow |
-| error | red |
-| critical | magenta |
-
-## Configuration
+### Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | 8081 | Server port |
+| `PORT` | 9006 | Server port |
 | `CAPACITY` | 1000 | Buffer capacity |
-| `VERBOSE` | false | Show metadata |
+| `VERBOSE` | false | Show metadata in terminal |
 
-## Docker
+### Docker
 
 ```bash
-# Build image
+cd server
 make docker-build
-
-# Run container
 make docker-run
-
-# Run with verbose mode
-make docker-run-verbose
 ```
 
-## Development
+## Swift SDK
 
-```bash
-# Run tests
-make test
+The client SDK lives in `swift/`. Add it as a local Swift Package dependency or point SPM at the `swift/` directory.
 
-# Check code
-make check
+### Usage
 
-# Lint with clippy
-make lint
+```swift
+import AppLogService
 
-# Format code
-make fmt
+// Configure once at app startup
+Logger.shared.configure(LoggerConfiguration(
+    serverURL: URL(string: "http://localhost:9006")!,
+    source: "ios",
+    defaultTags: ["myapp"],
+    minimumLevel: .debug
+))
 
-# Run all quality checks
-make quality
+// Log at any level
+Logger.shared.info("User signed in", metadata: ["userId": "123"])
+Logger.shared.error("Network request failed", tags: ["network"])
+Logger.shared.debug("Cache hit for key")
 ```
 
-## Architecture
+File, function, and line number are captured automatically. Logs are batched and sent in the background.
 
-- `main.rs` - Entry point, server setup, graceful shutdown
-- `config.rs` - Environment variable configuration
-- `models.rs` - LogEntry and LogLevel types
-- `buffer.rs` - Thread-safe circular buffer
-- `handlers.rs` - Axum HTTP handlers
-- `display.rs` - Terminal output with colors
+### Log Levels
+
+`trace` | `debug` | `info` | `notice` | `warning` | `error` | `critical`

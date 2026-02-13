@@ -20,7 +20,6 @@ mod buffer;
 mod config;
 mod display;
 mod handlers;
-// mod html; // Deprecated - replaced by Askama templates
 mod models;
 mod request_manager;
 mod storage;
