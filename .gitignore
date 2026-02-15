@@ -24,6 +24,7 @@ server/target/
 # Node
 node_modules/
 server/static/css
+server/static/app
 
 # Swift
 .build/

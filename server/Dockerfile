@@ -1,5 +1,6 @@
 # Multi-stage Dockerfile for Rust log server
 # Build: docker build -t log-server-rust .
+# NOTE: Run 'make build-web' before 'docker build' so static/app/ contains the SPA.
 
 # Stage 1: Build
 FROM rust:1.85-alpine AS builder
@@ -42,7 +43,7 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/target/release/log-server /app/log-server
 
-# Copy static files for serving CSS/JS
+# Copy static files (CSS/JS + built SPA in static/app/)
 COPY static ./static
 
 # Create non-root user and uploads directory with proper permissions

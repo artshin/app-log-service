@@ -1,4 +1,4 @@
-.PHONY: help build build-release run test check lint fmt clean \
+.PHONY: help build build-release build-web run test check lint fmt clean \
         docker-build docker-run docker-stop docker-clean \
         test-log test-logs test-logs-burst clear-logs get-logs
 
@@ -77,13 +77,18 @@ dev:
 # Build
 # ============================================================================
 
+# Build React SPA
+build-web:
+	@echo "Building React SPA..."
+	@cd ../web && npm ci && npm run build
+
 # Build in debug mode
-build: build-css
+build: build-css build-web
 	@echo "Building in debug mode..."
 	@cargo build
 
 # Build in release mode
-build-release: build-css
+build-release: build-css build-web
 	@echo "Building in release mode..."
 	@cargo build --release
 	@echo ""
@@ -163,8 +168,8 @@ quality: fmt-check lint test
 # Docker
 # ============================================================================
 
-# Build Docker image
-docker-build:
+# Build Docker image (builds web SPA first)
+docker-build: build-web
 	@echo "Building Docker image..."
 	@docker build -t $(DOCKER_IMAGE) .
 

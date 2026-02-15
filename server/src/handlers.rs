@@ -2,16 +2,14 @@
 //!
 //! Implements the REST API endpoints for log management.
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
-use askama::Template;
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
     response::{
         sse::{Event, KeepAlive, Sse},
-        IntoResponse, Response,
+        Html, IntoResponse, Response,
     },
     Json,
 };
@@ -28,77 +26,15 @@ use crate::{
     AppState,
 };
 
-/// Dashboard template for displaying log entries
-#[derive(Template)]
-#[template(path = "dashboard.html")]
-pub struct DashboardTemplate {
-    pub entries: Vec<LogEntry>,
-    pub total_count: usize,
-    pub level_counts: HashMap<String, usize>,
-    pub sources: Vec<String>,
-    pub all_tags: Vec<String>,
-}
-
-impl DashboardTemplate {
-    pub fn new(entries: Vec<LogEntry>) -> Self {
-        let total_count = entries.len();
-
-        // Calculate level counts
-        let mut level_counts = HashMap::new();
-        for entry in &entries {
-            *level_counts.entry(entry.level.clone()).or_insert(0) += 1;
-        }
-
-        // Extract unique sources
-        let mut sources: Vec<String> = entries
-            .iter()
-            .map(|e| e.source.clone())
-            .collect::<std::collections::HashSet<_>>()
-            .into_iter()
-            .collect();
-        sources.sort();
-
-        // Extract unique tags
-        let mut all_tags: Vec<String> = entries
-            .iter()
-            .flat_map(|e| e.tags.iter().cloned())
-            .collect::<std::collections::HashSet<_>>()
-            .into_iter()
-            .collect();
-        all_tags.sort();
-
-        Self {
-            entries,
-            total_count,
-            level_counts,
-            sources,
-            all_tags,
-        }
-    }
-}
-
-/// Askama filter to get tag color classes
-pub mod filters {
-    use crate::tags::get_tag_classes;
-
-    pub fn tag_classes(tag: &str) -> askama::Result<String> {
-        Ok(get_tag_classes(tag))
-    }
-}
-
-/// Empty state template for when no logs exist
-#[derive(Template)]
-#[template(path = "empty.html")]
-pub struct EmptyStateTemplate;
-
-/// GET / - HTML dashboard displaying all log entries
-pub async fn handle_root(State(state): State<Arc<AppState>>) -> Response {
-    let entries = state.buffer.get_all();
-
-    if entries.is_empty() {
-        EmptyStateTemplate.into_response()
-    } else {
-        DashboardTemplate::new(entries).into_response()
+/// GET / - Serve the React SPA
+pub async fn handle_root() -> Response {
+    match std::fs::read_to_string("static/app/index.html") {
+        Ok(html) => Html(html).into_response(),
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "SPA not built. Run 'npm run build' in web/",
+        )
+            .into_response(),
     }
 }
 
